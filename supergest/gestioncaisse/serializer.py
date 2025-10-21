@@ -46,7 +46,7 @@ class VenteSerializer(serializers.ModelSerializer):
 class CaisseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Caisse
-        fields = ['id', 'numero_caisse', 'nom', 'emplacement', 'statut', 'actif']
+        fields = ['id', 'numero_caisse', 'emplacement', 'statut', 'actif']
 
 class SessionCaisseSerializer(serializers.ModelSerializer):
     caisse = CaisseSerializer(read_only=True)

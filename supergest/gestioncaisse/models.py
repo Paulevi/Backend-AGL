@@ -14,7 +14,7 @@ class Caisse(models.Model):
     actif = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"Caisse {self.numero_caisse} - {self.nom}"
+        return f"Caisse {self.numero_caisse}"
 
 
 class SessionCaisse(models.Model):

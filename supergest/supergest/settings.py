@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "gestionstock",
     "gestioncaisse",
     "authentification",
+    "rh_app",
     "django_filters",
 ]
 
