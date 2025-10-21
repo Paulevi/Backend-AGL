@@ -8,9 +8,12 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return self.queryset.none()  # ou queryset vide
         user = self.request.user
         if user.role == 'ADMIN':
-            return User.objects.all()
-        return User.objects.filter(id=user.id)
+            return self.queryset.all()
+        return self.queryset.filter(role='USER')
+
 
 # Create your views here.

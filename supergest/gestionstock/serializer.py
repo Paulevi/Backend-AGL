@@ -21,6 +21,7 @@ class ProduitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Produit
         fields = '__all__'
+        ref_name = "ProduitStockSerializer"  # <- ici tu changes le nom
 
 
 class LigneCommandeSerializer(serializers.ModelSerializer):

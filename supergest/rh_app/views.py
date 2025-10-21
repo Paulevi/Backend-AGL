@@ -13,8 +13,13 @@ from .serializers import (
 
 
 class RegisterView(generics.CreateAPIView):
-    queryset = Employee.objects.all()
     serializer_class = EmployeeCreateSerializer
+    queryset = Employee.objects.all()
+
+    def perform_create(self, serializer):
+        if getattr(self, 'swagger_fake_view', False):
+            return
+        serializer.save()
 
 
 @api_view(['POST'])
@@ -36,40 +41,52 @@ def login_view(request):
 
 
 class EmployeeListView(generics.ListAPIView):
-    queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Employee.objects.none()
+
+        user = self.request.user
+        if user.role == "ADMIN":
+            return Employee.objects.all()
+        return Employee.objects.filter(user=user)
 
 
 class EmployeeDetailView(generics.RetrieveAPIView):
-    queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
     permission_classes = [IsAuthenticated]
+    queryset = Employee.objects.all()
 
 
 class CreateEmployeeView(generics.CreateAPIView):
-    queryset = Employee.objects.all()
     serializer_class = EmployeeCreateSerializer
     permission_classes = [IsAuthenticated]
+    queryset = Employee.objects.all()
 
     def perform_create(self, serializer):
+        if getattr(self, 'swagger_fake_view', False):
+            return
         if self.request.user.role != "Manager du magasin":
             raise PermissionError("Not authorized")
         serializer.save()
 
 
 class ScheduleListView(generics.ListAPIView):
-    queryset = Schedule.objects.all()
     serializer_class = ScheduleSerializer
     permission_classes = [IsAuthenticated]
+    queryset = Schedule.objects.all()
 
 
 class CreateScheduleView(generics.CreateAPIView):
-    queryset = Schedule.objects.all()
     serializer_class = ScheduleSerializer
     permission_classes = [IsAuthenticated]
+    queryset = Schedule.objects.all()
 
     def perform_create(self, serializer):
+        if getattr(self, 'swagger_fake_view', False):
+            return
         if self.request.user.role not in ["Manager du magasin", "Responsable de rayon"]:
             raise PermissionError("Not authorized")
         serializer.save()
@@ -80,25 +97,34 @@ class LeaveRequestListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.role == "Manager du magasin":
+        if getattr(self, 'swagger_fake_view', False):
+            return LeaveRequest.objects.none()
+
+        user = self.request.user
+        if user.role == "Manager du magasin":
             return LeaveRequest.objects.all()
-        return LeaveRequest.objects.filter(employee=self.request.user)
+        return LeaveRequest.objects.filter(employee__user=user)
 
 
 class CreateLeaveRequestView(generics.CreateAPIView):
-    queryset = LeaveRequest.objects.all()
     serializer_class = LeaveRequestSerializer
     permission_classes = [IsAuthenticated]
+    queryset = LeaveRequest.objects.all()
 
     def perform_create(self, serializer):
-        leave_request = serializer.save(employee=self.request.user)
-        if leave_request.employee_id != self.request.user.id and self.request.user.role != "Manager du magasin":
+        if getattr(self, 'swagger_fake_view', False):
+            return
+        leave_request = serializer.save(employee=self.request.user.employee_profile)
+        if leave_request.employee_id != self.request.user.employee_profile.id and self.request.user.role != "Manager du magasin":
             raise PermissionError("Not authorized")
 
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def approve_leave_request(request, request_id):
+    if getattr(request, 'swagger_fake_view', False):
+        return Response({"message": "Swagger fake view"})
+    
     if request.user.role != "Manager du magasin":
         return Response({"error": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
 
