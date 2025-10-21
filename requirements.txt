@@ -1,8 +1,4 @@
-fastapi
-uvicorn[standard]
-sqlalchemy
-pydantic
-python-jose[cryptography]
-passlib[bcrypt]
-python-multipart
-psycopg2-binary
+Django
+djangorestframework
+djangorestframework-simplejwt
+mysqlclient
